@@ -1,0 +1,4 @@
+sceneSetups:
+- path: Assets/PathFindingTestArea.unity
+  isLoaded: 1
+  isActive: 1
