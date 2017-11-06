@@ -2,12 +2,13 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Pathfinding : MonoBehaviour {
+public class Pathfinding : MonoBehaviour
+{
 
-    public Transform seeker;
-    public Transform target;
+    public Transform seeker, target;
 
     Grid grid;
+
     void Awake()
     {
         grid = GetComponent<Grid>();
@@ -18,56 +19,51 @@ public class Pathfinding : MonoBehaviour {
         FindPath(seeker.position, target.position);
     }
 
-	void FindPath(Vector3 startPos, Vector3 targetPos)
+    void FindPath(Vector3 startPos, Vector3 targetPos)
     {
+
         Node startNode = grid.NodeFromWorldPoint(startPos);
         Node targetNode = grid.NodeFromWorldPoint(targetPos);
 
-        List<Node> openList = new List<Node>();
-        HashSet<Node> closedList = new HashSet<Node>();
-        openList.Add(startNode);
+        Heap<Node> openSet = new Heap<Node>(grid.MaxSize);
+        HashSet<Node> closedSet = new HashSet<Node>();
+        openSet.Add(startNode);
 
-        while (openList.Count > 0)
+        while (openSet.Count > 0)
         {
-            Node currentNode = openList[0];
-            for (int i =1; i <openList.Count; i++)
-            {
-                if (openList[i].fScore < currentNode.fScore || openList[i].fScore == currentNode.fScore && openList[i].Hscore < currentNode.Hscore)
-                {
-                    currentNode = openList[i];
-                }
-            }
-
-        openList.Remove(currentNode);
-        closedList.Add(currentNode);
+            Node currentNode = openSet.RemoveFirst();
+            closedSet.Add(currentNode);
 
             if (currentNode == targetNode)
             {
                 RetracePath(startNode, targetNode);
                 return;
             }
-            
+
             foreach (Node neighbour in grid.GetNeighbours(currentNode))
             {
-                if (!neighbour.Pathable || closedList.Contains(neighbour))
-                { continue; }
-
-                int newMovementScoreToNeighbour = currentNode.gScore + GetDistance(currentNode, neighbour);
-                if(newMovementScoreToNeighbour < neighbour.gScore || !openList.Contains(neighbour))
+                if (!neighbour.walkable || closedSet.Contains(neighbour))
                 {
-                    neighbour.gScore = newMovementScoreToNeighbour;
-                    neighbour.Hscore = GetDistance(neighbour, targetNode);
+                    continue;
+                }
+
+                int newMovementCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour);
+                if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour))
+                {
+                    neighbour.gCost = newMovementCostToNeighbour;
+                    neighbour.hCost = GetDistance(neighbour, targetNode);
                     neighbour.parent = currentNode;
 
-                    if(!openList.Contains(neighbour))
+                    if (!openSet.Contains(neighbour))
+                        openSet.Add(neighbour);
+                    else
                     {
-                        openList.Add(neighbour);
+                        //openSet.UpdateItem(neighbour);
                     }
                 }
             }
         }
     }
-
 
     void RetracePath(Node startNode, Node endNode)
     {
@@ -82,7 +78,9 @@ public class Pathfinding : MonoBehaviour {
         path.Reverse();
 
         grid.path = path;
+
     }
+
     int GetDistance(Node nodeA, Node nodeB)
     {
         int dstX = Mathf.Abs(nodeA.gridX - nodeB.gridX);

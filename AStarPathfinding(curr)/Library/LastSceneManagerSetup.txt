@@ -1,4 +1,5 @@
 sceneSetups:
-- path: Assets/PathFindingTestArea.unity
+- path: C:/Users/PC/AppData/Local/Temp/Temp1_Pathfinding-master.zip/Pathfinding-master/Episode
+    04 - heap/Assets/Pathfinding Test.unity
   isLoaded: 1
   isActive: 1
